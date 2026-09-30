@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trading Vault</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#08090c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{font-family:Inter,Arial,sans-serif;background:#08090c;color:#f5f7fa;min-height:100vh}
+button,input,select{font:inherit}button{cursor:pointer}
+.sidebar{width:245px;background:#0d0f13;border-right:1px solid #20232a;padding:24px 16px;position:fixed;height:100vh;left:0;top:0}
+.logo{font-size:22px;font-weight:800;letter-spacing:-.5px;margin:5px 12px 35px}.logo span{color:#8b5cf6}
+.nav button{width:100%;border:0;background:transparent;color:#8f96a3;text-align:left;padding:13px 14px;margin-bottom:5px;border-radius:10px}
+.nav button:hover,.nav button.active{background:#191c23;color:#fff}
+.nav button.active{box-shadow:inset 3px 0 #8b5cf6}
+.main{margin-left:245px;width:calc(100% - 245px);padding:30px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;gap:10px}
+h1{font-size:28px}.subtitle{color:#777f8d;margin-top:5px;font-size:14px}
+.add{background:#8b5cf6;color:#fff;border:0;padding:11px 18px;border-radius:10px;font-weight:700;white-space:nowrap}
+.add:hover{background:#7c3aed}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.card{background:#101217;border:1px solid #20232b;border-radius:15px;padding:20px}
+.label{color:#777f8d;font-size:12px;margin-bottom:10px}
+.value{font-size:25px;font-weight:750}
+.green{color:#39d98a}.red{color:#ff5c70}.purple{color:#a78bfa}
+.section{margin-top:20px}.section-title{font-size:17px;font-weight:700;margin-bottom:13px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:14px 10px;text-align:left;border-bottom:1px solid #20232a;white-space:nowrap}
+th{color:#777f8d;font-size:12px}td{font-size:13px}
+.badge{padding:5px 9px;border-radius:20px;background:#191c23;font-size:11px}
+.badge.green{background:#103323}.badge.red{background:#35151b}.badge.purple{background:#24193b}
+.page{display:none}.page.active{display:block}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}
+.form-group label{display:block;color:#89909d;font-size:12px;margin-bottom:7px}
+input,select{width:100%;background:#0b0d11;border:1px solid #292d36;color:#fff;padding:11px;border-radius:9px;outline:none}
+input:focus,select:focus,button:focus-visible{border-color:#8b5cf6;outline:2px solid #8b5cf680}
+.modal{display:none;position:fixed;inset:0;background:#000b;z-index:10;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-box{width:min(650px,100%);max-height:90vh;overflow:auto;background:#111318;border:1px solid #292d36;border-radius:16px;padding:25px}
+.modal-head{display:flex;justify-content:space-between;margin-bottom:22px}
+.close{background:none;border:0;color:#aaa;font-size:22px}
+.submit{margin-top:20px;width:100%;padding:12px;border:0;border-radius:9px;background:#8b5cf6;color:#fff;font-weight:700}
+.account-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+.account-card h3,.card h3{margin-bottom:15px}
+.small{display:flex;justify-content:space-between;padding:7px 0;color:#8b929e;font-size:12px}.small strong{color:#fff}
+.progress{height:6px;background:#252832;border-radius:20px;margin-top:10px;overflow:hidden}
+.progress div{height:100%;background:#8b5cf6}
+.empty{text-align:center;padding:45px;color:#747b88}
+.acts{display:flex;gap:8px;margin-top:14px}
+td .acts{margin:0}
+.ic{background:#191c23;border:1px solid #292d36;color:#b6bcc8;border-radius:7px;padding:4px 10px;font-size:12px}
+.ic:hover{color:#fff;border-color:#8b5cf6}.ic.del:hover{color:#ff5c70;border-color:#ff5c70}
+.eq{width:100%;height:220px;display:block}
+.eqmeta{display:flex;justify-content:space-between;color:#777f8d;font-size:12px;margin-top:8px}
+.mobile-nav{display:none}
+@media(max-width:900px){
+.sidebar{display:none}
+.main{margin-left:0;width:100%;padding:20px 15px 90px}
+.grid{grid-template-columns:repeat(2,1fr)}.account-grid{grid-template-columns:1fr}
+.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;background:#0d0f13;border-top:1px solid #20232a;z-index:5;overflow-x:auto;padding-bottom:env(safe-area-inset-bottom,0px)}
+.mobile-nav button{flex:1;min-width:84px;padding:13px 6px;background:none;color:#8f96a3;border:0;font-size:11px}
+.mobile-nav button.active{color:#fff;box-shadow:inset 0 2px #8b5cf6}
+.form-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.value{font-size:20px}h1{font-size:23px}}
+.amber{color:#fbbf24}.badge.amber{background:#3a2c0d;color:#fbbf24}
+.value.sm{font-size:16px}
+.account-grid{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.small+.progress{margin:0 0 8px}
+.progress.warn div{background:#fbbf24}.progress.bad div{background:#ff5c70}.progress.ok div{background:#39d98a}
+.warnbox{border-radius:9px;padding:10px 12px;font-size:12px;margin-top:12px;line-height:1.5}
+.warnbox.bad{background:#35151b;color:#ff8a99}.warnbox.warn{background:#3a2c0d;color:#fbbf24}.warnbox.ok{background:#103323;color:#39d98a}
+.form-group.wide{grid-column:1/-1}
+.two{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;align-items:start}
+.two .form-group{margin-bottom:12px}
+input[type=file]{padding:9px}
+@media(max-width:900px){
+input,select{font-size:16px;padding:13px}
+.two{grid-template-columns:1fr}
+.modal{padding:0;align-items:flex-end}
+.modal-box{max-height:94vh;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.top{flex-wrap:wrap}.add{padding:12px 16px}
+.ic{padding:8px 12px}
+th,td{padding:12px 8px}}
+</style>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+#authScreen{position:fixed;inset:0;z-index:9999;background:#08090c;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(430px,100%);background:#101217;border:1px solid #292d36;border-radius:20px;padding:26px;box-shadow:0 25px 80px #0008}.auth-card h1{font-size:25px;margin-bottom:7px}.auth-card p{color:#89909d;font-size:13px;line-height:1.5;margin-bottom:20px}.auth-card .brand{font-weight:800;font-size:21px;margin-bottom:24px}.auth-card .brand span{color:#8b5cf6}.auth-tabs{display:flex;gap:7px;margin-bottom:18px}.auth-tabs button{flex:1;border:1px solid #292d36;background:#151820;color:#aeb5c1;border-radius:9px;padding:10px}.auth-tabs button.active{background:#8b5cf6;color:white;border-color:#8b5cf6}.auth-msg{font-size:12px;margin-top:12px;min-height:18px}.auth-msg.err{color:#ff7a8b}.auth-msg.ok{color:#39d98a}.cloud-status{display:flex;gap:8px;align-items:center;font-size:12px;color:#89909d}.dot{width:8px;height:8px;border-radius:50%;background:#777}.dot.on{background:#39d98a}.dot.off{background:#ff5c70}
+</style>
+</head>
+<body>
+<div id="authScreen"><div class="auth-card"><div class="brand">TRADING <span>VAULT</span></div><h1 id="authTitle">Sign in</h1><p id="authDesc">Sign in to sync your Trading Vault securely across devices.</p><div class="auth-tabs"><button id="loginTab" class="active" onclick="setAuthMode('login')">Sign in</button><button id="signupTab" onclick="setAuthMode('signup')">Create account</button></div><form onsubmit="submitAuth(event)"><div class="form-group"><label>Email</label><input id="authEmail" type="email" autocomplete="email" required></div><div class="form-group" style="margin-top:12px"><label>Password</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" required></div><button class="submit" id="authSubmit">Sign in</button></form><div id="authMsg" class="auth-msg"></div></div></div>
+
+
+
+<aside class="sidebar"><div class="logo">TRADING <span>VAULT</span></div><div class="nav" id="sideNav"></div></aside>
+<main class="main">
+
+<section id="dashboard" class="page active">
+<div class="top"><div><h1>Dashboard</h1><div class="subtitle">Your trading performance at a glance</div></div><button class="add" onclick="openForm('trades')">+ Add Trade</button></div>
+<div class="grid" id="dashStats"></div>
+<div class="section"><div class="card"><div class="section-title">Equity curve (cumulative P&amp;L)</div><div id="chart"></div></div></div>
+<div class="section"><div class="section-title">Accounts overview</div><div id="dashboardAccounts"></div></div>
+</section>
+
+<section id="accounts" class="page">
+<div class="top"><div><h1>Accounts</h1><div class="subtitle">Manage your funded accounts</div></div><button class="add" onclick="openForm('accounts')">+ Add Account</button></div>
+<div class="account-grid" id="accountList"></div>
+</section>
+
+<section id="trades" class="page">
+<div class="top"><div><h1>Trades</h1><div class="subtitle">Trades update the balance of their linked account</div></div><button class="add" onclick="openForm('trades')">+ Add Trade</button></div>
+<div class="card table-wrap"><table><thead><tr><th>DATE</th><th>ACCOUNT</th><th>SYMBOL</th><th>DIRECTION</th><th>R</th><th>P&amp;L</th><th>STRATEGY</th><th>RESULT</th><th></th></tr></thead><tbody id="tradeList"></tbody></table></div>
+</section>
+
+<section id="payouts" class="page">
+<div class="top"><div><h1>Payouts</h1><div class="subtitle">Track every payout</div></div><button class="add" onclick="openForm('payouts')">+ Add Payout</button></div>
+<div class="grid"><div class="card"><div class="label">TOTAL RECEIVED</div><div class="value purple" id="payoutTotal"></div></div><div class="card"><div class="label">PENDING</div><div class="value" id="pendingPayout"></div></div></div>
+<div class="section card table-wrap"><table><thead><tr><th>DATE</th><th>ACCOUNT</th><th>#</th><th>REQUESTED</th><th>APPROVED</th><th>RECEIVED</th><th>FEES</th><th>NET</th><th>STATUS</th><th></th></tr></thead><tbody id="payoutList"></tbody></table></div>
+</section>
+
+<section id="goals" class="page">
+<div class="top"><div><h1>Goals</h1><div class="subtitle">Track your financial targets</div></div><button class="add" onclick="openForm('goals')">+ Add Goal</button></div>
+<div class="account-grid" id="goalList"></div>
+</section>
+
+<section id="expenses" class="page">
+<div class="top"><div><h1>Expenses</h1><div class="subtitle">Track trading and personal expenses</div></div><button class="add" onclick="openForm('expenses')">+ Add Expense</button></div>
+<div class="grid"><div class="card"><div class="label">TOTAL EXPENSES</div><div class="value red" id="expenseTotal"></div></div></div>
+<div class="section card table-wrap"><table><thead><tr><th>DATE</th><th>CATEGORY</th><th>DESCRIPTION</th><th>AMOUNT</th><th></th></tr></thead><tbody id="expenseList"></tbody></table></div>
+</section>
+
+<section id="analytics" class="page">
+<div class="top"><div><h1>Analytics</h1><div class="subtitle">Understand your trading performance</div></div></div>
+<div class="grid" id="anStats"></div>
+<div class="section card"><div class="section-title">Equity curve</div><div id="chart2"></div></div>
+<div class="section card"><div class="section-title">Daily P&amp;L (last 30 trading days)</div><div id="dailyChart"></div></div>
+<div class="section card"><div class="section-title">Monthly P&amp;L</div><div id="monthlyChart"></div></div>
+</section>
+<section id="account" class="page"><div class="top"><div><h1>Cloud Account</h1><div class="subtitle">Your private Trading Vault login and cloud sync</div></div></div><div class="grid"><div class="card"><div class="label">SIGNED IN AS</div><div class="value sm" id="cloudEmail">—</div></div><div class="card"><div class="label">CLOUD STATUS</div><div class="cloud-status"><span class="dot" id="cloudDot"></span><span id="cloudStatus">Not synced</span></div></div></div><div class="section"><div class="card"><h3>Cloud Sync</h3><p class="subtitle" style="margin:8px 0 15px">Your current browser data can be uploaded to your private Supabase account. After that, use Sync Now whenever you want to save changes to the cloud.</p><div class="acts"><button class="add" onclick="syncNow()">☁ Sync Now</button><button class="ic" onclick="loadFromCloud()">↙ Load from Cloud</button><button class="ic del" onclick="signOutVault()">Sign out</button></div><div id="syncMsg" class="auth-msg"></div></div></div></section>
+<section id="tools" class="page">
+<div class="top"><div><h1>Calculators</h1><div class="subtitle">Check consistency and payout safety before you request</div></div></div>
+<div class="two">
+<div class="card"><h3>Consistency calculator</h3>
+<div class="form-group"><label for="cAcct">Load from account</label><select id="cAcct" onchange="loadCons()"></select></div>
+<div class="form-group"><label for="cTotal">Total profit ($)</label><input id="cTotal" type="number" step="any" inputmode="decimal" oninput="calcCons()"></div>
+<div class="form-group"><label for="cBig">Biggest winning day ($)</label><input id="cBig" type="number" step="any" inputmode="decimal" oninput="calcCons()"></div>
+<div class="form-group"><label for="cRule">Consistency rule %</label><input id="cRule" type="number" step="any" inputmode="decimal" oninput="calcCons()"></div>
+<div id="cOut"></div></div>
+<div class="card"><h3>Payout buffer calculator</h3>
+<div class="form-group"><label for="bAcct">Load from account</label><select id="bAcct" onchange="loadBuf()"></select></div>
+<div class="form-group"><label for="bBal">Current balance ($)</label><input id="bBal" type="number" step="any" inputmode="decimal" oninput="calcBuf()"></div>
+<div class="form-group"><label for="bDD">Maximum drawdown remaining ($)</label><input id="bDD" type="number" step="any" inputmode="decimal" oninput="calcBuf()"></div>
+<div class="form-group"><label for="bTr">Trailing drawdown remaining ($)</label><input id="bTr" type="number" step="any" inputmode="decimal" oninput="calcBuf()"></div>
+<div class="form-group"><label for="bReq">Requested payout ($)</label><input id="bReq" type="number" step="any" inputmode="decimal" oninput="calcBuf()"></div>
+<div class="form-group"><label for="bSafe">Safety buffer ($)</label><input id="bSafe" type="number" step="any" inputmode="decimal" oninput="calcBuf()"></div>
+<div id="bOut"></div></div>
+</div>
+</section>
+
+<section id="tools" class="page">
+  <div class="page-head">
+    <div>
+      <h1>Tools & Settings</h1>
+      <p>Manage your Trading Vault data and app settings.</p>
+    </div>
+  </div>
+
+  <div class="cards-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="card">
+      <div class="card-icon">⬇️</div>
+      <h3>Backup Data</h3>
+      <p>Download all your accounts, trades, payouts, goals and expenses as a JSON backup.</p>
+      <button class="add" onclick="exportVaultBackup()">Export Backup</button><button class="ic" onclick="syncNow()">☁ Sync to Cloud</button>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">⬆️</div>
+      <h3>Restore Data</h3>
+      <p>Restore your Trading Vault data from a previous backup file.</p>
+      <input id="vaultImport" type="file" accept=".json,application/json" style="display:none" onchange="importVaultBackup(event)">
+      <button class="add" onclick="document.getElementById('vaultImport').click()">Restore Backup</button>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">📱</div>
+      <h3>Install / App Info</h3>
+      <p>Trading Vault is prepared to work as an installable web app when hosted on HTTPS.</p>
+      <button class="add" onclick="showAppInfo()">App Info</button>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">🧹</div>
+      <h3>Data Management</h3>
+      <p>View how your current data is stored in this browser.</p>
+      <button class="add" onclick="showStorageInfo()">Storage Info</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="mobile-nav" id="mobNav"></div>
+
+<div class="modal" id="lb" onclick="this.classList.remove('show')"><img id="lbImg" alt="Trade screenshot" style="max-width:100%;max-height:90vh;border-radius:10px"></div>
+<div class="modal" id="modal"><div class="modal-box">
+<div class="modal-head"><h2 id="mTitle"></h2><button class="close" onclick="closeModal()" aria-label="Close">×</button></div>
+<form onsubmit="saveForm(event)"><div class="form-grid" id="fields"></div><button class="submit">Save</button></form>
+</div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const load=k=>{try{const v=JSON.parse(localStorage.getItem(k));return Array.isArray(v)?v:[]}catch(e){return[]}};
+const persist=(k,d)=>{try{localStorage.setItem(k,JSON.stringify(d));if(typeof queueCloudSync === "function" && window.__tvReadyForAutoSync) queueCloudSync();return true}catch(e){alert("Browser storage is full. Delete some screenshots or old data.");return false}};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const money=n=>(n<0?"-":"")+"$"+Math.abs(Number(n||0)).toLocaleString("en-US",{maximumFractionDigits:2});
+const ymd=d=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const today=()=>ymd(new Date()),ago=n=>ymd(new Date(Date.now()-n*864e5));
+const sum=(a,f)=>a.reduce((x,y)=>x+(Number(f(y))||0),0);
+const byDate=(a,b)=>(a.date||"").localeCompare(b.date||"");
+const pnet=p=>p.net??((p.received||0)-(p.fees||0));
+const pdate=p=>p.recDate||p.reqDate||p.date||"";
+const act=a=>!["Failed","Closed"].includes(a.status);
+const CL={ok:"green",warn:"amber",bad:"red"};
+const D={};["accounts","trades","payouts","goals","expenses"].forEach(k=>D[k]=load(k));
+D.accounts.forEach(a=>{if(!a.id)a.id=uid()});
+["trades","payouts"].forEach(k=>D[k].forEach(r=>{const a=D.accounts.find(x=>x.name===r.account);if(a)r.account=a.id}));
+Object.keys(D).forEach(k=>persist(k,D[k]));
+
+const E={
+accounts:{t:"Account",f:[["firm","Prop firm","text","Tradeify"],["name","Account name","text","25K Instant"],["type","Account type","select",["Evaluation","Funded","Instant"]],["status","Status","select",["Active","Passed","Failed","Closed"]],
+["size","Account size ($)","number","25000"],["starting","Starting balance ($)","number","25000"],["balance","Current balance ($)","number","Blank = starting balance",1],
+["dailyLoss","Daily loss limit ($)","number","500",1],["dd","Maximum drawdown ($)","number","1500",1],["trailing","Trailing drawdown ($)","number","1500",1],
+["consistency","Consistency rule %","number","30",1],["target","Profit target ($)","number","1500",1],["payoutRule","Payout rule","text","e.g. 5 days of $100+",1],
+["payoutLimit","Payout limit ($)","number","1500",1],["minDays","Minimum trading days","number","5",1],["cost","Purchase cost ($)","number","99",1],["purchased","Purchase date","date","",1]]},
+trades:{t:"Trade",f:[["date","Date","date"],["account","Account","acct"],["symbol","Symbol","text","NQ / XAUUSD"],["direction","Long / Short","select",["Long","Short"]],
+["entry","Entry","number","",1],["sl","Stop loss","number","",1],["tp","Take profit","number","",1],["size","Position size","number","",1],["risk","Risk amount ($)","number","",1],["riskPct","Risk %","number","Auto if blank",1],
+["pnl","P&L ($)","number","200"],["r","R multiple","number","Auto if blank",1],["strategy","Strategy","text","ORB",1],["setup","Setup","text","Retest",1],
+["session","Session","select",["London","New York","Asia","Overnight","Other"]],["emotion","Emotion","select",["Calm","Confident","Anxious","FOMO","Revenge","Greedy","Fearful","Bored"]],
+["mistake","Mistake","select",["None","Moved stop","Oversized","Early exit","Late entry","Broke rules","Overtraded","Chased"]],["notes","Notes","text","",  "w"],["shot","Screenshot","file","","w"]]},
+payouts:{t:"Payout",f:[["firm","Prop firm","text","Auto from account",1],["account","Account","acct"],["number","Payout number","number","Auto",1],["requested","Requested amount ($)","number"],
+["approved","Approved amount ($)","number","",1],["received","Received amount ($)","number","",1],["fees","Fees ($)","number","0",1],["net","Net payout ($)","number","Auto: received − fees",1],
+["reqDate","Request date","date"],["recDate","Received date","date","",1],["status","Status","select",["Requested","Approved","Pending","Received","Rejected"]],
+["method","Payment method","select",["Bank transfer","Wise","PayPal","Crypto","Other"]],["notes","Notes","text","","w"]]},
+goals:{t:"Goal",f:[["name","Goal name","text","BMW 320d"],["target","Target amount","number"],["current","Currently saved","number"],["deadline","Deadline","date","",1]]},
+expenses:{t:"Expense",f:[["date","Date","date"],["category","Category","select",["Trading","Personal","Software","Fees","Other"]],["description","Description","text"],["amount","Amount","number"]]}
+};
+const PAGES=[["account","◎ Cloud Account"],["dashboard","◉ Dashboard"],["accounts","▣ Accounts"],["trades","↗ Trades"],["payouts","◇ Payouts"],["goals","◎ Goals"],["expenses","▤ Expenses"],["analytics","⌁ Analytics"],["tools","⚙ Tools & Settings"]];
+let cur={e:null,i:-1},page="dashboard";
+const navHtml=()=>PAGES.map(([id,l])=>`<button class="${id===page?"active":""}" onclick="showPage('${id}')">${l}</button>`).join("");
+function showPage(id){page=id;document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));
+ $("sideNav").innerHTML=navHtml();$("mobNav").innerHTML=navHtml().replace(/[◉▣↗◇◎▤⌁⚖] /g,"");window.scrollTo(0,0);render()}
+const accName=v=>{const a=D.accounts.find(x=>x.id===v);return a?`${a.firm} · ${a.name}`:(v||"—")};
+const applyTrade=(t,s)=>{const a=D.accounts.find(x=>x.id===t.account);if(a)a.balance=(a.balance||0)+s*t.pnl};
+
+function openForm(e,i=-1){
+ cur={e,i};const rec=i>=0?D[e][i]:{};$("mTitle").textContent=(i>=0?"Edit ":"Add ")+E[e].t;
+ $("fields").innerHTML=E[e].f.map(([k,l,t,x,o])=>{
+  const v=rec[k]??"",id="f_"+k,req=o?"":"required";let inp;
+  if(t==="select")inp=`<select id="${id}">${x.map(q=>`<option ${q===v?"selected":""}>${esc(q)}</option>`).join("")}</select>`;
+  else if(t==="acct"){const legacy=v&&!D.accounts.some(a=>a.id===v)?`<option value="${esc(v)}" selected>${esc(v)} (unlinked)</option>`:"";
+   inp=`<select id="${id}"><option value="">None</option>${D.accounts.map(a=>`<option value="${esc(a.id)}" ${a.id===v?"selected":""}>${esc(a.firm)} · ${esc(a.name)}</option>`).join("")}${legacy}</select>`}
+  else if(t==="file")inp=`<input id="${id}" type="file" accept="image/*" data-keep="${v?1:0}">${v?'<div class="subtitle">Current screenshot is kept unless you pick a new one.</div>':""}`;
+  else inp=`<input id="${id}" type="${t}" ${t==="number"?'step="any" inputmode="decimal"':""} ${req} placeholder="${esc(x||"")}" value="${esc(v)}" ${k==="strategy"||k==="setup"?`list="dl_${k}"`:""}>`;
+  return `<div class="form-group ${o==="w"?"wide":""}"><label for="${id}">${l}</label>${inp}</div>`}).join("")
+  +["strategy","setup"].map(k=>e==="trades"?`<datalist id="dl_${k}">${[...new Set(D.trades.map(t=>t[k]).filter(Boolean))].map(s=>`<option value="${esc(s)}">`).join("")}</datalist>`:"").join("");
+ if(i<0)["f_date","f_reqDate"].forEach(id=>{const d=$(id);if(d)d.value=today()});
+ $("modal").classList.add("show");
+}
+const closeModal=()=>$("modal").classList.remove("show");
+const shrink=f=>new Promise(r=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,900/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*s;c.height=im.height*s;c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",.7))};im.onerror=()=>r("");im.src=fr.result};fr.readAsDataURL(f)});
+
+async function saveForm(ev){
+ ev.preventDefault();const{e,i}=cur,old=i>=0?D[e][i]:{},rec={};
+ for(const[k,,t]of E[e].f){const el=$("f_"+k);
+  if(t==="file"){const f=el.files[0];rec[k]=f?await shrink(f):(el.dataset.keep==="1"?old[k]:"")}
+  else rec[k]=t==="number"?(el.value===""?null:Number(el.value)):el.value}
+ const acct=D.accounts.find(a=>a.id===rec.account);
+ if(e==="accounts"){rec.id=i>=0?old.id:uid();rec.balance??=rec.starting}
+ if(e==="trades"){
+  if(rec.r==null)rec.r=rec.risk?+(rec.pnl/rec.risk).toFixed(2):0;
+  const base=acct?(acct.size||acct.starting):0;if(rec.riskPct==null&&rec.risk&&base)rec.riskPct=+(rec.risk/base*100).toFixed(2);
+  if(i>=0)applyTrade(old,-1);applyTrade(rec,1)}
+ if(e==="payouts"){if(!rec.firm&&acct)rec.firm=acct.firm;rec.net??=(rec.received||0)-(rec.fees||0);
+  rec.number??=i>=0?old.number:D.payouts.filter(p=>p.account===rec.account).length+1}
+ i>=0?D[e][i]=rec:D[e].push(rec);
+ persist(e,D[e]);if(e==="trades")persist("accounts",D.accounts);
+ closeModal();render();
+}
+function del(e,i){
+ if(!confirm("Delete this "+E[e].t.toLowerCase()+"?"))return;const r=D[e][i];
+ if(e==="trades"){applyTrade(r,-1);persist("accounts",D.accounts)}
+ D[e].splice(i,1);persist(e,D[e]);render();
+}
+const acts=(e,i,x="")=>`<div class="acts">${x}<button class="ic" onclick="openForm('${e}',${i})">Edit</button><button class="ic del" onclick="del('${e}',${i})">Delete</button></div>`;
+const shot=i=>{$("lbImg").src=D.trades[i].shot;$("lb").classList.add("show")};
+
+// ---- rule tracker ----
+const lv=(r,l)=>r<=0||r/l<.25?"bad":r/l<.5?"warn":"ok";
+function track(a){
+ const S=a.starting||a.size||0,bal=a.balance||0,ts=D.trades.filter(t=>t.account===a.id).sort(byDate),days={};
+ let run=S,peak=S;ts.forEach(t=>{run+=t.pnl;peak=Math.max(peak,run);days[t.date]=(days[t.date]||0)+t.pnl});peak=Math.max(peak,bal);
+ const dPnl=days[today()]||0,profit=bal-S,tp=sum(Object.values(days),v=>v),big=Math.max(0,...Object.values(days)),cons=tp>0?big/tp*100:0;
+ const dl=a.dailyLoss||0,dd=a.dd||0,tr=a.trailing||0,dayN=Object.keys(days).length;
+ const dlRem=dl?dl-Math.max(0,-dPnl):null,ddRem=dd?bal-(S-dd):null,trRem=tr?bal-Math.min(peak-tr,S):null,tgtRem=a.target?Math.max(0,a.target-profit):null;
+ const rules=[[dlRem,dl,"Daily loss"],[ddRem,dd,"Max drawdown"],[trRem,tr,"Trailing drawdown"]].filter(x=>x[0]!==null);
+ const buffer=rules.length?Math.min(...rules.map(x=>x[0])):null;
+ const msgs=rules.filter(x=>lv(x[0],x[1])!=="ok").map(x=>`${x[2]}: ${x[0]<=0?"breached":money(x[0])+" left"}`);
+ if(a.consistency&&cons>a.consistency*.8)msgs.push(`Consistency ${cons.toFixed(1)}% vs ${a.consistency}% limit`);
+ let avail=Math.max(0,profit);if(a.payoutLimit)avail=Math.min(avail,a.payoutLimit);
+ let block="";if(a.minDays&&dayN<a.minDays)block=`Needs ${a.minDays-dayN} more trading day(s)`;else if(a.consistency&&cons>a.consistency)block="Consistency rule not met";if(block)avail=0;
+ const worst=rules.some(x=>x[0]<=0)?"Breached":rules.some(x=>lv(x[0],x[1])==="bad")?"At risk":msgs.length?"Caution":"On track";
+ return{S,bal,peak,dPnl,profit,tp,big,cons,dl,dd,tr,dlRem,ddRem,trRem,tgtRem,buffer,avail,block,dayN,msgs,worst};
+}
+const WC={"Breached":"red","At risk":"red","Caution":"amber","On track":"green"};
+const row=(l,v,c="")=>`<div class="small"><span>${l}</span><strong class="${c}">${v}</strong></div>`;
+const rr=(l,r,lim)=>{if(r===null)return"";const v=lv(r,lim);return row(l,money(r),CL[v])+`<div class="progress ${v}"><div style="width:${Math.max(0,Math.min(100,r/lim*100))}%"></div></div>`};
+function accCard(a,i){
+ const t=track(a),cc=!a.consistency?"":t.cons>a.consistency?"red":t.cons>a.consistency*.8?"amber":"green";
+ return `<div class="card account-card"><h3>${esc(a.firm)} · ${esc(a.name)}</h3>
+ <div style="margin:-6px 0 12px"><span class="badge purple">${esc(a.type||"Account")}</span> <span class="badge">${esc(a.status||"Active")}</span> <span class="badge ${WC[t.worst]}">${t.worst}</span></div>
+ ${row("Current balance",money(t.bal))}${row("Daily P&L",money(t.dPnl),t.dPnl>=0?"green":"red")}
+ ${rr("Daily loss remaining",t.dlRem,t.dl)}${rr("Max drawdown remaining",t.ddRem,t.dd)}${rr("Trailing drawdown remaining",t.trRem,t.tr)}
+ ${t.tgtRem===null?"":row("Profit target remaining",money(t.tgtRem),t.tgtRem===0?"green":"")+`<div class="progress ok"><div style="width:${Math.max(0,Math.min(100,t.profit/a.target*100))}%"></div></div>`}
+ ${row("Consistency",t.tp>0?t.cons.toFixed(1)+"%"+(a.consistency?" / "+a.consistency+"%":""):"n/a",cc)}
+ ${row("Trading days",t.dayN+(a.minDays?" / "+a.minDays:""))}
+ ${row("Payout available",money(t.avail),"purple")}${t.block?`<div class="subtitle">${t.block}</div>`:""}
+ ${row("Buffer remaining",t.buffer===null?"n/a":money(t.buffer),t.buffer===null?"":CL[lv(t.buffer,Math.max(t.dl,t.dd,t.tr,1))])}
+ ${a.payoutRule?row("Payout rule",esc(a.payoutRule)):""}
+ ${t.msgs.length?`<div class="warnbox ${t.worst==="Caution"?"warn":"bad"}">⚠ ${t.msgs.map(esc).join("<br>⚠ ")}</div>`:""}${acts("accounts",i)}</div>`;
+}
+
+// ---- charts ----
+function equity(){
+ const ts=D.trades.slice().sort(byDate);if(ts.length<2)return`<div class="empty">Add at least two trades to see your equity curve.</div>`;
+ let s=0;const pts=[0,...ts.map(t=>s+=t.pnl)],mn=Math.min(...pts),mx=Math.max(...pts),rg=(mx-mn)||1,W=600,H=200,p=10;
+ const X=i=>p+i*(W-2*p)/(pts.length-1),Y=v=>H-p-(v-mn)/rg*(H-2*p),line=pts.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(" "),c=s>=0?"#39d98a":"#ff5c70";
+ return `<svg class="eq" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Equity curve"><line x1="0" x2="${W}" y1="${Y(0)}" y2="${Y(0)}" stroke="#292d36" stroke-dasharray="4 4"/>
+ <polygon points="${X(0)},${Y(0)} ${line} ${X(pts.length-1)},${Y(0)}" fill="${c}" opacity=".12"/><polyline points="${line}" fill="none" stroke="${c}" stroke-width="2.5" vector-effect="non-scaling-stroke"/></svg>
+ <div class="eqmeta"><span>Low ${money(mn)}</span><span>Now ${money(s)}</span><span>High ${money(mx)}</span></div>`;
+}
+function bars(it){
+ if(!it.length)return`<div class="empty">No data yet.</div>`;
+ const mx=Math.max(...it.map(x=>Math.abs(x[1])),1),W=600,H=200,m=H/2,bw=W/it.length;
+ return `<svg class="eq" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img"><line x1="0" x2="${W}" y1="${m}" y2="${m}" stroke="#292d36"/>${it.map(([l,v],i)=>{const h=Math.abs(v)/mx*(m-8);
+ return `<rect x="${i*bw+bw*.15}" y="${v>=0?m-h:m}" width="${bw*.7}" height="${Math.max(h,1)}" fill="${v>=0?"#39d98a":"#ff5c70"}" rx="2"><title>${esc(l)}: ${money(v)}</title></rect>`}).join("")}</svg>
+ <div class="eqmeta"><span>${esc(it[0][0])}</span><span>${it.length} bars</span><span>${esc(it.at(-1)[0])}</span></div>`;
+}
+const group=(ts,f)=>{const g={};ts.forEach(t=>{if(t.date){const k=f(t.date);g[k]=(g[k]||0)+t.pnl}});return Object.entries(g).sort((a,b)=>a[0].localeCompare(b[0]))};
+const st=(l,v,c="")=>`<div class="card"><div class="label">${l}</div><div class="value ${c}">${v}</div></div>`;
+const sg=v=>v>=0?"green":"red";
+
+// ---- calculators ----
+function fillSel(id){const s=$(id),v=s.value;s.innerHTML='<option value="">Enter manually</option>'+D.accounts.map(a=>`<option value="${esc(a.id)}">${esc(a.firm)} · ${esc(a.name)}</option>`).join("");s.value=v}
+function loadCons(){const a=D.accounts.find(x=>x.id===$("cAcct").value);if(!a)return;const t=track(a);$("cTotal").value=+t.tp.toFixed(2);$("cBig").value=+t.big.toFixed(2);$("cRule").value=a.consistency||"";calcCons()}
+function calcCons(){
+ const T=+$("cTotal").value,B=+$("cBig").value,R=+$("cRule").value,o=$("cOut");
+ if(T<=0||!R){o.innerHTML=`<div class="warnbox warn">Enter a positive total profit and your consistency rule %.</div>`;return}
+ const p=B/T*100,ok=p<=R,need=B/(R/100);
+ o.innerHTML=row("Current consistency",p.toFixed(1)+"%",ok?"green":"red")+row("Rule limit",R+"%")+row("Largest allowed winning day",money(T*R/100))+
+ (ok?`<div class="warnbox ok">✓ You satisfy the consistency rule.</div>`:`<div class="warnbox bad">✗ Rule not met. Reach ${money(need)} total profit (${money(need-T)} more) without a bigger best day.</div>`);
+}
+function loadBuf(){const a=D.accounts.find(x=>x.id===$("bAcct").value);if(!a)return;const t=track(a);$("bBal").value=a.balance;$("bDD").value=t.ddRem??"";$("bTr").value=t.trRem??"";calcBuf()}
+function calcBuf(){
+ const g=id=>$(id).value===""?null:+$(id).value,bal=g("bBal"),r=[g("bDD"),g("bTr")].filter(x=>x!==null),req=g("bReq")||0,sf=g("bSafe")||0,o=$("bOut");
+ if(bal===null||!r.length){o.innerHTML=`<div class="warnbox warn">Enter your balance and at least one remaining drawdown.</div>`;return}
+ const room=Math.min(...r),after=room-req,safe=Math.max(0,Math.min(room-sf,bal)),l=after<0?"bad":after<sf?"warn":"ok";
+ o.innerHTML=row("Balance after payout",money(bal-req))+row("Remaining drawdown",money(after),CL[l])+row("Safe payout amount",money(safe),"purple")+
+ (l==="bad"?`<div class="warnbox bad">⚠ This payout could breach your drawdown by ${money(-after)}.</div>`:l==="warn"?`<div class="warnbox warn">⚠ Leaves less than your ${money(sf)} safety buffer.</div>`:`<div class="warnbox ok">✓ Payout stays above your safety buffer.</div>`);
+}
+
+function render(){
+ const tr=D.trades,pnl=sum(tr,t=>t.pnl),paid=sum(D.payouts.filter(p=>p.status==="Received"),pnet),exp=sum(D.expenses,x=>x.amount),cost=sum(D.accounts,a=>a.cost);
+ const A=D.accounts.filter(act),T=A.map(track),td=today(),inR=(f,t)=>sum(tr.filter(x=>x.date>=f&&x.date<=t),x=>x.pnl);
+ const mo=sum(tr.filter(x=>(x.date||"").slice(0,7)===td.slice(0,7)),x=>x.pnl),net=paid-exp-cost;
+ const dayMap=group(tr,d=>d),big=Math.max(0,...dayMap.map(x=>x[1])),cAll=pnl>0?big/pnl*100:null,cdd=sum(T,x=>Math.max(0,x.peak-x.bal));
+ $("dashStats").innerHTML=st("TOTAL BALANCE",money(sum(A,a=>a.balance)))+st("TOTAL P&L",money(pnl),sg(pnl))+st("TOTAL PAYOUTS",money(paid),"purple")+st("ACTIVE ACCOUNTS",A.length)
+ +st("TODAY'S P&L",money(inR(td,td)),sg(inR(td,td)))+st("WEEKLY P&L (7 DAYS)",money(inR(ago(6),td)),sg(inR(ago(6),td)))+st("MONTHLY P&L",money(mo),sg(mo))+st("TOTAL EXPENSES",money(exp),"red")
+ +st("NET INCOME",money(net),sg(net))+st("CURRENT DRAWDOWN",money(cdd),cdd?"red":"")+st("CONSISTENCY",cAll===null?"n/a":cAll.toFixed(1)+"%");
+ $("payoutTotal").textContent=money(paid);
+ $("pendingPayout").textContent=money(sum(D.payouts.filter(p=>["Pending","Requested","Approved"].includes(p.status)),p=>p.approved||p.requested));
+ $("expenseTotal").textContent=money(exp);
+
+ $("accountList").innerHTML=D.accounts.length?D.accounts.map(accCard).join(""):`<div class="card empty">No accounts yet.<br>Add your first funded account.</div>`;
+ $("dashboardAccounts").innerHTML=D.accounts.length?`<div class="card table-wrap"><table><thead><tr><th>ACCOUNT</th><th>STATUS</th><th>BALANCE</th><th>DAILY P&amp;L</th><th>BUFFER LEFT</th><th>TARGET LEFT</th></tr></thead><tbody>
+ ${D.accounts.map(a=>{const t=track(a);return `<tr><td>${esc(a.firm)} · ${esc(a.name)}</td><td><span class="badge ${act(a)?WC[t.worst]:""}">${act(a)?t.worst:esc(a.status)}</span></td><td>${money(t.bal)}</td>
+ <td class="${sg(t.dPnl)}">${money(t.dPnl)}</td><td>${t.buffer===null?"n/a":money(t.buffer)}</td><td>${t.tgtRem===null?"n/a":money(t.tgtRem)}</td></tr>`}).join("")}</tbody></table></div>`:`<div class="card empty">Add an account to see it here.</div>`;
+
+ $("tradeList").innerHTML=tr.length?tr.map((t,i)=>`<tr><td>${esc(t.date)}</td><td>${esc(accName(t.account))}</td><td>${esc(t.symbol)}</td><td>${esc(t.direction)}</td>
+ <td class="${sg(t.r)}">${t.r}R</td><td class="${sg(t.pnl)}">${money(t.pnl)}</td>
+ <td>${esc(t.strategy||"—")}<div class="subtitle">${esc([t.setup,t.session,t.emotion,t.mistake&&t.mistake!=="None"?"⚠ "+t.mistake:""].filter(Boolean).join(" · "))}</div></td>
+ <td><span class="badge ${t.pnl>=0?"green":"red"}">${t.pnl>=0?"WIN":"LOSS"}</span></td><td>${acts("trades",i,t.shot?`<button class="ic" onclick="shot(${i})">Chart</button>`:"")}</td></tr>`).reverse().join("")
+ :`<tr><td colspan="9" class="empty">No trades yet. Add one to start your journal.</td></tr>`;
+
+ $("payoutList").innerHTML=D.payouts.length?D.payouts.map((p,i)=>`<tr><td>${esc(pdate(p))}</td><td>${esc(accName(p.account))}</td><td>${esc(p.number??"")}</td><td>${money(p.requested)}</td><td>${p.approved==null?"—":money(p.approved)}</td>
+ <td class="green">${money(p.received)}</td><td class="red">${money(p.fees)}</td><td class="purple">${money(pnet(p))}</td>
+ <td><span class="badge ${p.status==="Received"?"green":p.status==="Rejected"?"red":"purple"}">${esc(p.status)}</span></td><td>${acts("payouts",i)}</td></tr>`).reverse().join("")
+ :`<tr><td colspan="10" class="empty">No payouts yet.</td></tr>`;
+
+ $("goalList").innerHTML=D.goals.length?D.goals.map((g,i)=>{const pc=Math.min(100,g.target?g.current/g.target*100:0);
+ return `<div class="card"><h3>${esc(g.name)}</h3>${row("Saved",money(g.current))}${row("Target",money(g.target))}${g.deadline?row("Deadline",esc(g.deadline)):""}
+ <div class="progress"><div style="width:${pc}%"></div></div><div style="margin-top:10px;color:#8b929e;font-size:12px">${pc.toFixed(1)}% complete</div>${acts("goals",i)}</div>`}).join(""):`<div class="card empty">No goals yet.</div>`;
+ $("expenseList").innerHTML=D.expenses.length?D.expenses.map((x,i)=>`<tr><td>${esc(x.date)}</td><td>${esc(x.category)}</td><td>${esc(x.description)}</td><td class="red">${money(x.amount)}</td><td>${acts("expenses",i)}</td></tr>`).reverse().join("")
+ :`<tr><td colspan="5" class="empty">No expenses yet.</td></tr>`;
+
+ // analytics
+ const ts=tr.slice().sort(byDate),w=ts.filter(t=>t.pnl>0),l=ts.filter(t=>t.pnl<0),gw=sum(w,t=>t.pnl),gl=-sum(l,t=>t.pnl);
+ let s=0,pk=0,mdd=0,ws=0,ls=0,cw=0,cl=0;
+ ts.forEach(t=>{s+=t.pnl;pk=Math.max(pk,s);mdd=Math.max(mdd,pk-s);if(t.pnl>0){cw++;cl=0}else if(t.pnl<0){cl++;cw=0}else cw=cl=0;ws=Math.max(ws,cw);ls=Math.max(ls,cl)});
+ const g={};ts.forEach(t=>{if(t.strategy)g[t.strategy]=(g[t.strategy]||0)+t.pnl});const gs=Object.entries(g).sort((a,b)=>b[1]-a[1]);
+ const sv=x=>x?`<span style="font-size:16px">${esc(x[0])}<br><span class="${sg(x[1])}">${money(x[1])}</span></span>`:"—";
+ $("anStats").innerHTML=st("TOTAL TRADES",ts.length)+st("WIN RATE",(ts.length?w.length/ts.length*100:0).toFixed(1)+"%","green")+st("AVERAGE R",(ts.length?sum(ts,t=>t.r)/ts.length:0).toFixed(2)+"R","purple")
+ +st("PROFIT FACTOR",gl?(gw/gl).toFixed(2):gw?"∞":"0.00")+st("AVERAGE WIN",money(w.length?gw/w.length:0),"green")+st("AVERAGE LOSS",money(l.length?-gl/l.length:0),"red")
+ +st("MAX DRAWDOWN",money(mdd),mdd?"red":"")+st("NET INCOME",money(net),sg(net))+st("WINNING STREAK",ws)+st("LOSING STREAK",ls)+st("BEST STRATEGY",sv(gs[0]))+st("WORST STRATEGY",sv(gs.length>1?gs.at(-1):null));
+ $("chart").innerHTML=$("chart2").innerHTML=equity();
+ $("dailyChart").innerHTML=bars(group(tr,d=>d).slice(-30));$("monthlyChart").innerHTML=bars(group(tr,d=>d.slice(0,7)).slice(-12));
+ fillSel("cAcct");fillSel("bAcct");calcCons();calcBuf();
+}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeModal();$("lb").classList.remove("show")}});
+showPage("dashboard");
+</script>
+
+
+
+<script>
+const SUPABASE_URL = "https://jlbzbbjilbwcupghhwcv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CrdjKVxIBl2qMpjg-sm-fA_-IcsiCHL";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let authMode="login", cloudUser=null;
+const cloudTables={accounts:"accounts",trades:"trades",payouts:"payouts",goals:"goals",expenses:"expenses"};
+let cloudSyncTimer=null, cloudSyncBusy=false, cloudSyncQueued=false, cloudLoading=false;
+window.__tvReadyForAutoSync=false;
+function queueCloudSync(){
+  if(cloudLoading || !cloudUser) return;
+  cloudSyncQueued=true;
+  clearTimeout(cloudSyncTimer);
+  cloudSyncTimer=setTimeout(async()=>{
+    if(cloudSyncBusy) return;
+    cloudSyncQueued=false;
+    cloudSyncBusy=true;
+    try{await syncNow(true)}finally{cloudSyncBusy=false;if(cloudSyncQueued) queueCloudSync()}
+  },1200);
+}
+
+function setAuthMode(m){authMode=m;$("loginTab").classList.toggle("active",m==="login");$("signupTab").classList.toggle("active",m==="signup");$("authTitle").textContent=m==="login"?"Sign in":"Create your account";$("authDesc").textContent=m==="login"?"Sign in to sync your Trading Vault securely across devices.":"Create a private account for your Trading Vault.";$("authSubmit").textContent=m==="login"?"Sign in":"Create account";$("authPassword").autocomplete=m==="login"?"current-password":"new-password";$("authMsg").textContent="";}
+function authMessage(t,ok=false){$("authMsg").textContent=t;$("authMsg").className="auth-msg "+(ok?"ok":"err")}
+async function submitAuth(ev){ev.preventDefault();const email=$("authEmail").value.trim(),password=$("authPassword").value;authMessage("Working…",true);let r=authMode==="login"?await sb.auth.signInWithPassword({email,password}):await sb.auth.signUp({email,password});if(r.error){authMessage(r.error.message);return}if(authMode==="signup" && !r.data.session){authMessage("Account created. Check your email to confirm it, then sign in.",true);return}cloudUser=r.data.user;hideAuth();await cloudStartup();}
+function hideAuth(){$("authScreen").style.display="none"}
+function showAuth(){$("authScreen").style.display="flex"}
+function setCloudStatus(t,on=true){$("cloudStatus").textContent=t;$("cloudDot").className="dot "+(on?"on":"off");const sm=$("syncMsg");if(sm){sm.textContent=t;sm.className="auth-msg "+(on?"ok":"err")}}
+async function cloudStartup(){const {data}=await sb.auth.getUser();cloudUser=data.user;if(!cloudUser){showAuth();return}$("cloudEmail").textContent=cloudUser.email||"—";setCloudStatus("Signed in — not synced yet",true);const marker=localStorage.getItem("tv_cloud_loaded_v1");if(!marker){const {data:rows,error}=await sb.from("accounts").select("id").limit(1);if(!error && rows && rows.length){setCloudStatus("Cloud data found — use Load from Cloud",true)}else setCloudStatus("Ready — use Sync Now to upload this device",true)}window.__tvReadyForAutoSync=true}
+async function signOutVault(){await sb.auth.signOut();cloudUser=null;setCloudStatus("Signed out",false);showAuth()}
+function mapForCloud(table,obj,userId,idMap){const x={...obj,user_id:userId};delete x.id;delete x.created_at;delete x.updated_at;if(table==="accounts"){x.name=x.name??x.accountName;x.starting_balance=x.starting_balance??x.starting;x.current_balance=x.current_balance??x.balance;x.daily_loss=x.daily_loss??x.dailyLoss;x.max_drawdown=x.max_drawdown??x.dd;x.trailing_drawdown=x.trailing_drawdown??x.trailing;x.consistency=x.consistency??null;x.profit_target=x.profit_target??x.target;x.payout_rule=x.payout_rule??x.payoutRule;x.payout_limit=x.payout_limit??x.payoutLimit;x.minimum_trading_days=x.minimum_trading_days??x.minDays;x.purchase_cost=x.purchase_cost??x.cost;x.purchase_date=x.purchase_date??x.purchased;delete x.accountName;delete x.starting;delete x.balance;delete x.dailyLoss;delete x.dd;delete x.trailing;delete x.target;delete x.payoutRule;delete x.payoutLimit;delete x.minDays;delete x.cost;delete x.purchased}
+if(table==="trades"){x.account_id=x.account_id||idMap.accounts[obj.account]||null;x.date=x.date||null;x.position_size=x.position_size??x.size;x.risk_amount=x.risk_amount??x.risk;x.risk_pct=x.risk_pct??x.riskPct;x.r_multiple=x.r_multiple??x.r;x.stop_loss=x.stop_loss??x.sl;x.take_profit=x.take_profit??x.tp;delete x.account;delete x.size;delete x.risk;delete x.riskPct;delete x.r;delete x.sl;delete x.tp;delete x.shot}
+if(table==="payouts"){x.account_id=x.account_id||idMap.accounts[obj.account]||null;x.payout_number=x.payout_number??x.number;x.requested=x.requested??null;x.request_date=x.request_date??x.reqDate;x.received_date=x.received_date??x.recDate;x.payment_method=x.payment_method??x.method;delete x.account;delete x.number;delete x.reqDate;delete x.recDate;delete x.method}
+if(table==="goals"){}
+return x}
+async function syncNow(silent=false){if(!cloudUser){if(!silent)showAuth();return}if(!silent)setCloudStatus("Syncing…",true);const idMap={accounts:{}};try{for(const table of Object.keys(cloudTables)){const {error}=await sb.from(table).delete().eq("user_id",cloudUser.id);if(error)throw error}
+for(const a of D.accounts){const payload=mapForCloud("accounts",a,cloudUser.id,idMap);const {data,error}=await sb.from("accounts").insert(payload).select("id").single();if(error)throw error;idMap.accounts[a.id]=data.id}
+for(const table of ["trades","payouts","goals","expenses"]){const rows=D[table].map(o=>mapForCloud(table,o,cloudUser.id,idMap));if(rows.length){const {error}=await sb.from(table).insert(rows);if(error)throw error}}
+localStorage.setItem("tv_cloud_loaded_v1","1");setCloudStatus(silent?"Cloud auto-synced":"Synced successfully",true)}catch(e){console.error(e);setCloudStatus("Sync failed: "+(e.message||"unknown error"),false)}}
+async function loadFromCloud(){if(!cloudUser){showAuth();return}if(!confirm("Load cloud data and replace the data currently in this browser?"))return;setCloudStatus("Loading cloud data…",true);cloudLoading=true;try{const out={};for(const table of Object.keys(cloudTables)){const {data,error}=await sb.from(table).select("*").order("created_at",{ascending:true});if(error)throw error;out[table]=data||[]}
+const map={};D.accounts=out.accounts.map(a=>{const x={...a,id:a.id,starting:a.starting_balance,balance:a.current_balance,dailyLoss:a.daily_loss,dd:a.max_drawdown,trailing:a.trailing_drawdown,target:a.profit_target,payoutRule:a.payout_rule,payoutLimit:a.payout_limit,minDays:a.minimum_trading_days,cost:a.purchase_cost,purchased:a.purchase_date};map[a.id]=x.id;return x});D.trades=out.trades.map(t=>({...t,id:t.id,account:t.account_id,risk:t.risk_amount,riskPct:t.risk_pct,r:t.r_multiple,sl:t.stop_loss,tp:t.take_profit,size:t.position_size}));D.payouts=out.payouts.map(p=>({...p,id:p.id,account:p.account_id,number:p.payout_number,reqDate:p.request_date,recDate:p.received_date,method:p.payment_method}));D.goals=out.goals;D.expenses=out.expenses;Object.keys(D).forEach(k=>persist(k,D[k]));localStorage.setItem("tv_cloud_loaded_v1","1");setCloudStatus("Loaded from cloud",true);render()}catch(e){console.error(e);setCloudStatus("Load failed: "+(e.message||"unknown error"),false)}finally{cloudLoading=false}}
+sb.auth.onAuthStateChange((_event,session)=>{cloudUser=session?.user||null;if(cloudUser){hideAuth();setTimeout(cloudStartup,0)}else showAuth()});
+window.addEventListener("load",async()=>{const {data}=await sb.auth.getSession();cloudUser=data.session?.user||null;if(cloudUser){hideAuth();await cloudStartup()}else showAuth()});
+</script>
+
+<script>
+function exportVaultBackup(){
+  const payload={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    app:"Trading Vault",
+    data:{
+      accounts: JSON.parse(localStorage.getItem("accounts")||"[]"),
+      trades: JSON.parse(localStorage.getItem("trades")||"[]"),
+      payouts: JSON.parse(localStorage.getItem("payouts")||"[]"),
+      goals: JSON.parse(localStorage.getItem("goals")||"[]"),
+      expenses: JSON.parse(localStorage.getItem("expenses")||"[]")
+    }
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="trading-vault-backup-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+function importVaultBackup(ev){
+  const file=ev.target.files?.[0];
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const x=JSON.parse(r.result);
+      if(!x?.data || !Array.isArray(x.data.accounts) || !Array.isArray(x.data.trades)) throw new Error();
+      if(!confirm("Restore this backup? Current browser data will be replaced.")) return;
+      ["accounts","trades","payouts","goals","expenses"].forEach(k=>{
+        localStorage.setItem(k,JSON.stringify(Array.isArray(x.data[k])?x.data[k]:[]));
+      });
+      alert("Backup restored. Reloading Trading Vault.");
+      location.reload();
+    }catch(e){
+      alert("Invalid Trading Vault backup file.");
+    }
+  };
+  r.readAsText(file);
+  ev.target.value="";
+}
+
+function showAppInfo(){
+  alert("Trading Vault\\n\\nPrivate personal trading tracker.\\n\\nCurrent data is stored in this browser. Cloud login/sync has not been connected yet.");
+}
+
+function showStorageInfo(){
+  const keys=["accounts","trades","payouts","goals","expenses"];
+  const counts=keys.map(k=>{
+    try{return k+": "+JSON.parse(localStorage.getItem(k)||"[]").length;}
+    catch(e){return k+": 0";}
+  }).join("\\n");
+  alert("Current browser data:\\n\\n"+counts+"\\n\\nNo PIN/lock system is enabled.");
+}
+</script>
+
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
