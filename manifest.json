@@ -1,7 +1,7 @@
 {
   "name": "Trading Vault",
   "short_name": "Trading Vault",
-  "start_url": "./trading-vault.html",
+  "start_url": "./" ,
   "scope": "./",
   "display": "standalone",
   "background_color": "#08090c",
